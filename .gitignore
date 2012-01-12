@@ -1,0 +1,8 @@
+*~
+*#
+*.swp
+results/*
+data/*
+*.ps
+*.tar.gz
+*.RData

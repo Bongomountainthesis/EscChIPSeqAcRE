@@ -1,0 +1,130 @@
+
+options(stringsAsFactors=FALSE)
+###
+#
+# For each region in the BED files, fetches the read count in that regions from the BAM file.
+#
+###
+
+##bed files
+
+res_ctrl <- read.csv(file = "/mnt/data/DeSeq/ctrl_h3k9ac_peaks.csv")
+res_rest <- read.csv(file = "/mnt/data/DeSeq/rest_h3k9ac_peaks.csv")
+
+##filter for pval cut off, distance to TSS and peak size
+
+ctrl <- res_ctrl[which(res_ctrl[,"neg10log10pVal"] >= 100),]
+rest <- res_rest[which(res_rest[,"neg10log10pVal"] >= 100),]
+
+ctrl <- ctrl[which(ctrl[,"Peak_width"]<=6000),]
+rest <- rest[which(rest[,"Peak_width"]<=6000),]
+
+ctrl <- ctrl[which(abs(ctrl[,"distancetoFeature"]) <= 3000),]
+rest <- rest[which(abs(rest[,"distancetoFeature"]) <= 3000),]
+
+## find unique and shared peaks
+
+ctrl_ids <- ctrl[,"EnsemblID"]
+rest_ids <- rest[,"EnsemblID"]
+
+shared <- intersect(ctrl_ids, rest_ids)
+
+unique_ctrl <- ctrl_ids[which(!(ctrl_ids %in% shared))]
+unique_rest <- rest_ids[which(!(rest_ids %in% shared))]
+
+## how many of these have a REST binding site?
+
+restbind <- read.csv(file = "../REST_binding_sites.csv")
+
+#tidy up...
+
+restbind <- restbind[,c(2,3,4,5,6,7,8,9,10,11,15,16,17)]
+
+# take big sites
+
+restbind <- restbind[which(restbind[,"neg10log10pVal"] >= 100),]
+
+# take close ones - 10kb apparently...
+
+restbind <- restbind[which(restbind[,"distancetoFeature"] <= 10000),]
+
+ctrl_peakrest <- merge(ctrl, restbind, by.x = "EnsemblID", by.y = "EnsemblID", all.x = TRUE, suffixes = c("_K9Ac","_REST"))
+rest_peakrest <- merge(rest, restbind, by.x = "EnsemblID", by.y = "EnsemblID", all.x = TRUE, suffixes = c("_K9Ac","_REST"))
+
+ctrl_res <- ctrl_peakrest[which(ctrl_peakrest[,"EnsemblID"] %in% unique_ctrl),]
+rest_res <- rest_peakrest[which(rest_peakrest[,"EnsemblID"] %in% unique_rest),]
+
+write.csv(ctrl_res, file = "unique_control_H3K9ac_plusREST.csv")
+write.csv(rest_res, file = "unique_restko_H3K9ac_plusREST.csv")
+
+shared_res <- rest_peakrest[which(rest_peakrest[,"EnsemblID"] %in% shared),]
+
+write.csv(shared_res, file = "shared_H3K9ac_plusREST.csv")
+
+
+#########################################################################
+
+## same for H4ac
+
+
+options(stringsAsFactors=FALSE)
+
+res_ctrl <- read.csv(file = "/mnt/data/DeSeq_H4/ctrl_h4ac_peaks.csv")
+res_rest <- read.csv(file = "/mnt/data/DeSeq_H4/rest_h4ac_peaks.csv")
+
+##filter for pval cut off, distance to TSS and peak size
+
+ctrl <- res_ctrl[which(res_ctrl[,"neg10log10pVal"] >= 100),]
+rest <- res_rest[which(res_rest[,"neg10log10pVal"] >= 100),]
+
+ctrl <- ctrl[which(ctrl[,"Peak_width"]<=6000),]
+rest <- rest[which(rest[,"Peak_width"]<=6000),]
+
+ctrl <- ctrl[which(abs(ctrl[,"distancetoFeature"]) <= 3000),]
+rest <- rest[which(abs(rest[,"distancetoFeature"]) <= 3000),]
+
+## find unique and shared peaks
+
+ctrl_ids <- ctrl[,"EnsemblID"]
+rest_ids <- rest[,"EnsemblID"]
+
+shared <- intersect(ctrl_ids, rest_ids)
+
+unique_ctrl <- ctrl_ids[which(!(ctrl_ids %in% shared))]
+unique_rest <- rest_ids[which(!(rest_ids %in% shared))]
+
+## how many of these have a REST binding site?
+
+restbind <- read.csv(file = "../REST_binding_sites.csv")
+
+#tidy up...
+
+restbind <- restbind[,c(2,3,4,5,6,7,8,9,10,11,15,16,17)]
+
+# take big sites
+
+restbind <- restbind[which(restbind[,"neg10log10pVal"] >= 100),]
+
+# take close ones - 10kb apparently...
+
+restbind <- restbind[which(restbind[,"distancetoFeature"] <= 10000),]
+
+ctrl_peakrest <- merge(ctrl, restbind, by.x = "EnsemblID", by.y = "EnsemblID", all.x = TRUE, suffixes = c("_K9Ac","_REST"))
+rest_peakrest <- merge(rest, restbind, by.x = "EnsemblID", by.y = "EnsemblID", all.x = TRUE, suffixes = c("_K9Ac","_REST"))
+
+ctrl_res <- ctrl_peakrest[which(ctrl_peakrest[,"EnsemblID"] %in% unique_ctrl),]
+rest_res <- rest_peakrest[which(rest_peakrest[,"EnsemblID"] %in% unique_rest),]
+
+write.csv(ctrl_res, file = "unique_control_H4ac_plusREST.csv")
+write.csv(rest_res, file = "unique_restko_HK4ac_plusREST.csv")
+
+shared_res <- rest_peakrest[which(rest_peakrest[,"EnsemblID"] %in% shared),]
+
+write.csv(shared_res, file = "shared_H4ac_plusREST.csv")
+
+
+
+
+
+
+
